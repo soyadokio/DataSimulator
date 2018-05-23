@@ -12,7 +12,7 @@ p.s. 目前尚未开发一键导入数据库功能。
 
 ## :point_right: 使用
 1. 双击运行`DataSimulator_v*.*.*.jar`。
-2. (非首次运行跳过此步骤)首次运行后无任何提示，但会在同级(子级)目录下生成下列3个文件：
+2. （非首次运行跳过此步骤）首次运行后无任何提示，但会在同级（子级）目录下生成下列3个文件：
 ```
 .\log\log.yyyy-MM-dd.log    // 运行日志
 .\tableinfo.conf            // 数据表描述文件（默认的配置文件）
@@ -24,47 +24,48 @@ p.s. 目前尚未开发一键导入数据库功能。
 
 ## :point_right: 格式 & 规范
 ```
-table:`table_name_1` rows
-`field_name_1` `field_type_1` [min,max)|{val_1,val_2,...,val_n} pk
-`field_name_2` `field_type_2` [min,max)|{val_1,val_2,...,val_n} nn
+table:table_name_1 rows
+field_name_1 field_type_1 [min,max)|{val_1,val_2,...,val_n} pk
+field_name_2 field_type_2 [min,max)|{val_1,val_2,...,val_n} nn
 ...
-`field_name_n` `field_type_n` [min,max)|{val_1,val_2,...,val_n}
+field_name_n field_type_n [min,max)|{val_1,val_2,...,val_n}
 
-table:`table_name_2` rows
-`field_name_1` `field_type_1` [min,max)|{val_1,val_2,...,val_n} pk
-`field_name_2` `field_type_2` [min,max)|{val_1,val_2,...,val_n} nn
+table:table_name_2 rows
+field_name_1 field_type_1 [min,max)|{val_1,val_2,...,val_n} pk
+field_name_2 field_type_2 [min,max)|{val_1,val_2,...,val_n} nn
 ...
-`field_name_n` `field_type_n` [min,max)|{val_1,val_2,...,val_n}
+field_name_n field_type_n [min,max)|{val_1,val_2,...,val_n}
 
 ...
 
-table:`table_name_n` rows
-`field_name_1` `field_type_1` [min,max)|{val_1,val_2,...,val_n} pk
-`field_name_2` `field_type_2` [min,max)|{val_1,val_2,...,val_n} nn
+table:table_name_n rows
+field_name_1 field_type_1 [min,max)|{val_1,val_2,...,val_n} pk
+field_name_2 field_type_2 [min,max)|{val_1,val_2,...,val_n} nn
 ...
-`field_name_n` `field_type_n` [min,max)|{val_1,val_2,...,val_n}
+field_name_n field_type_n [min,max)|{val_1,val_2,...,val_n}
 ```
 
 - 以`#`和`//`为起始的行为注释行
-- 当`数据表描述文件`中单次出现多表（超过1个）描述时，执行后生成的 SQL Script 文件按第一个表名命名。
-- 字段的每一项描述信息之间**以空格隔开**
+- 当`数据表描述文件`中单次出现多表（超过1个）的描述时，执行后生成的 SQL Script 文件以第一个表名命名
 - 记录的行数为**必填**信息
+- 字段的每一项描述信息之间**以空格隔开**
 - pk 表示主键，可选
 - nn 表示非空，可选
 - 字段类型支持：`int`、`long`、`float`、`double`、`string`和`varchar`（`string`和`varchar`效果相同）
+- （可选）当字段类型选择`float`或`double`时，可在类型后紧跟`.`加数字，约束保留小数位数
 - 对字段取值的约束包括三种情况：`[min,max)`或`{val1,...,valn}`或`无约束`，**最多只可出现一种约束**
-- `[min,max)`表示可以取到从min(包含)到max(不包含)的所有值，当约束主键时该区间的大小应不小于所需字段的行数
+- `[min,max)`表示可以取到从min（包含）到max（不包含）的所有值，当约束主键时该区间的大小应不小于所需字段的行数
 - `{val1,...,valn}`表示取值集合，当元素为字串时**不添加任何单/双引号**
 
 ## :point_right: 实例
 现设定*数据表描述文件*内容如下：
 ```
-table:employee 20           // 表名设置为employee，生成20条数据
-id int [1,100) pk           // 字段名为id，数据类型为int，取值范围为1（包括）到100（不包括），设为主键
-gender varchar {男,女}      // 字段名为gender，数据类型为varchar，取值集合为{'男','女'}
-age int [20,60)             // 字段名为age，数据类型为int，取值范围为20（包括）到60（不包括）
-salary double (2000,20000]  // 字段名为salary，数据类型为double，取值范围为2000（不包括）到20000（包括）
-title varchar {PM,PG,UI}    // 字段名为title，数据类型为varchar，取值集合为{'PM','PG','UI'}
+table:employee 20             // 表名设置为employee，生成20条数据
+id int [1,100) pk             // 字段名为id，数据类型为int，取值范围为1（包括）到100（不包括），设为主键
+gender varchar {男,女}        // 字段名为gender，数据类型为varchar，取值集合为{'男','女'}
+age int [20,60)               // 字段名为age，数据类型为int，取值范围为20（包括）到60（不包括）
+salary double.2 (2000,20000]  // 字段名为salary，数据类型为double，取值范围为2000（不包括）到20000（包括），“.2”表示保留两位小数
+title varchar {PM,PG,UI}      // 字段名为title，数据类型为varchar，取值集合为{'PM','PG','UI'}
 ```
 所得`employee.sql`内容为：
 ```sql
