@@ -1,17 +1,18 @@
 package cn.soyadokio.ds.core;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.soyadokio.ds.bean.SimulatorInfo;
 import cn.soyadokio.ds.bean.FieldInfo;
+import cn.soyadokio.ds.bean.SimulatorInfo;
 import cn.soyadokio.ds.bean.TableInfo;
 import cn.soyadokio.ds.util.MyUtils;
 
@@ -31,7 +32,7 @@ public class SimulatorService {
         BufferedReader reader = null;
         try {
             List<TableInfo> tableInfoList = new ArrayList<>();
-            reader = new BufferedReader(new FileReader(this.filename));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(this.filename), "UTF-8"));
             String line;
             TableInfo tableInfo = null;
             List<FieldInfo> fieldInfoList = null;
@@ -42,6 +43,20 @@ public class SimulatorService {
                 if (line.trim().startsWith("//") || line.trim().startsWith("#")) {
                     continue;
                 }
+
+                if (line.contains("//")) {
+                    line = line.substring(0, line.indexOf("//")).trim();
+                }
+                line = line.replaceAll("\\s+", " ");
+                line = line.replaceAll(":\\s", ":");
+                line = line.replaceAll("\\s*,\\s*", ",");
+                line = line.replaceAll("\\(\\s+", "(");
+                line = line.replaceAll("\\s+\\)", ")");
+                line = line.replaceAll("\\[\\s+", "[");
+                line = line.replaceAll("\\s+\\]", "]");
+                line = line.replaceAll("\\{\\s+", "{");
+                line = line.replaceAll("\\s+\\}", "}");
+
                 if (MyUtils.startsWithIgnoreCase(line, 0, "table")) {
                     if (tableInfo != null) {
                         tableInfo.fieldInfos = fieldInfoList;

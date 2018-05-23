@@ -57,6 +57,7 @@ public class TableInfo {
             tableRecords.append("\n");
         }
         tableRecords.setLength(tableRecords.length() - 2);
+        tableRecords.append(";");
         return tableRecords.toString();
     }
 

@@ -1,8 +1,11 @@
 package cn.soyadokio.ds.bean;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +27,7 @@ public class FieldInfo<T> {
     private Number max;
     private Set<T> valueSet;
     private Constraint constraint;
+    private int decimalRestriction = -1;
 
     private Set<T> generatedValues = new HashSet<>(); // 已生成的数据
 
@@ -73,6 +77,14 @@ public class FieldInfo<T> {
 
     public void setConstraint(Constraint constraint) {
         this.constraint = constraint;
+    }
+
+    public int getDecimalRestriction() {
+        return decimalRestriction;
+    }
+
+    public void setDecimalRestriction(int decimalRestriction) {
+        this.decimalRestriction = decimalRestriction;
     }
 
     public Set<T> getGeneratedValues() {
@@ -129,10 +141,10 @@ public class FieldInfo<T> {
 
     public String getNextString() throws Exception {
         String str;
-        if (isValid() &&  fieldType == String.class) {
+        if (isValid() && fieldType == String.class) {
             if (isPrimaryKey() && !hasValueSet() && !hasValueRanges()) {
-                logger.info("字段{}为主键,但是缺失取值范围和取值集合信息", fieldName);
-                throw new Exception("字段" + fieldName + "为主键,但是缺失取值范围和取值集合信息");
+                logger.info("字段{}为主键，但是缺失取值范围和取值集合信息", fieldName);
+                throw new Exception("字段" + fieldName + "为主键，但是缺失取值范围和取值集合信息");
             }
             if (hasValueSet()) {
                 str =  (String)RandomHelper.nextValue(valueSet);
@@ -140,7 +152,7 @@ public class FieldInfo<T> {
                 str = "";
             }
         } else {
-            throw new Exception("字段类型不是String, 不可获取字符串值");
+            throw new Exception("字段类型不是String，不可获取字符串值");
         }
 
         if (isPrimaryKey()) {
@@ -155,7 +167,7 @@ public class FieldInfo<T> {
 
     public Number getNextNumber() throws Exception {
         if (!isValid()) {
-            logger.info("字段{}为无效字段",fieldName);
+            logger.info("字段{}为无效字段", fieldName);
             throw new Exception("字段" + fieldName + "为无效字段");
         }
         Number num;
@@ -198,9 +210,19 @@ public class FieldInfo<T> {
         } else if (fieldType == Long.class) {
             num = RandomHelper.nextLong((long) min, (long) max);
         } else if (fieldType == Float.class) {
-            num = RandomHelper.nextFloat((float) min, (float) max);
+            double temp = RandomHelper.nextFloat((float) min, (float) max);
+            if (decimalRestriction == -1) {
+                num = temp;
+            } else {
+                num = limitDecimalDigit(temp, decimalRestriction);
+            }
         } else if (fieldType == Double.class) {
-            num = RandomHelper.nextDouble((double) min, (double) max);
+            double temp = RandomHelper.nextDouble((double) min, (double) max);
+            if (decimalRestriction == -1) {
+                num = temp;
+            } else {
+                num = limitDecimalDigit(temp, decimalRestriction);
+            }
         } else {
             num = null;
         }
@@ -214,9 +236,19 @@ public class FieldInfo<T> {
         } else if (fieldType == Long.class) {
             num = RandomHelper.random.nextLong();
         } else if (fieldType == Float.class) {
-            num = RandomHelper.random.nextFloat();
+            double temp = RandomHelper.random.nextFloat();
+            if (decimalRestriction == -1) {
+                num = temp;
+            } else {
+                num = limitDecimalDigit(temp, decimalRestriction);
+            }
         } else if (fieldType == Double.class) {
-            num = RandomHelper.random.nextDouble();
+            double temp = RandomHelper.random.nextDouble();
+            if (decimalRestriction == -1) {
+                num = temp;
+            } else {
+                num = limitDecimalDigit(temp, decimalRestriction);
+            }
         } else {
             return null;
         }
@@ -235,12 +267,21 @@ public class FieldInfo<T> {
             FieldInfo fieldInfo = new FieldInfo();
             fieldInfo.setFieldName(fieldName);
             Class<?> type = ConvertHelper.getFieldType(fieldType);
-            if (type != null) {
-                fieldInfo.setFieldType(type);
-            } else {
-                logger.info("错误的字段类型信息,字段类型:{}", fieldType);
-                throw new Exception("错误的字段类型信息");
+            if (type == null) {
+                int decimalRestriction = syntaxCheck(fieldType);
+                if (decimalRestriction == -1) {
+                    logger.info("错误的字段类型信息,字段类型:{}", fieldType);
+                    throw new Exception("错误的字段类型信息");
+                } else {
+                    fieldInfo.setDecimalRestriction(decimalRestriction);
+                    if (MyUtils.startsWithIgnoreCase(fieldType, "float")) {
+                        type = Float.class;
+                    } else if (MyUtils.startsWithIgnoreCase(fieldType, "double")) {
+                        type = Double.class;
+                    }
+                }
             }
+            fieldInfo.setFieldType(type);
 
             if (strs.length > 2) {
                 // 设置了取值范围、取值集合或约束信息
@@ -317,6 +358,39 @@ public class FieldInfo<T> {
                 ", valueSet=" + valueSet +
                 ", constraint=" + constraint +
                 '}';
+    }
+
+    /**
+     * Method Name: syntaxCheck
+     * Description: 检查是否为带了小数位限制的float/double类型
+     * @param type
+     * @return  若不符合规则，返回-1，否者返回限制小数的位数
+     * @since       JDK 1.8.0
+     */
+    private static int syntaxCheck(String type) {
+        Pattern p = Pattern.compile("(float|double)\\.\\d+");
+        Matcher m = p.matcher(type.toLowerCase());
+        if (m.matches()) {
+            String limit = type.substring(type.indexOf(".") + 1);
+            if (MyUtils.isNumeric(limit)) {
+                return Integer.valueOf(limit);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Method Name: limitDecimalDigit
+     * Description: 保留指定位数的小数（四舍五入）
+     * @param d
+     * @param scale 指定位数
+     * @return
+     * @since		JDK 1.8.0
+     */
+    private static double limitDecimalDigit(double d, int scale) {
+        BigDecimal b = new BigDecimal(d);
+        b = b.setScale(scale, BigDecimal.ROUND_HALF_UP);
+        return b.doubleValue();
     }
 
     static class Constraint {

@@ -78,10 +78,10 @@ public class SimulatorServiceTest {
         // 输出至文件
         try {
             String sqlScriptPath = writeFile(sqlScript);
-            logger.info("成功生成SQL Script[.sql]文件： {}。", sqlScriptPath);
+            logger.info("成功生成SQL Script文件： {}。", sqlScriptPath);
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            logger.error("成功生成SQL Script[.sql]文件时发生异常。");
+            logger.error("生成SQL Script文件时发生异常。");
         }
 
     }
@@ -89,7 +89,7 @@ public class SimulatorServiceTest {
     /**
      * Method Name: loadLogbackConfig
      * Description: 读取自定义的SLF4J的配置文件，并以之配置SLF4J
-     * @since		JDK 1.8.0_144
+     * @since		JDK 1.8.0
      */
     private void loadLogbackConfig() {
         File logbackConfig = new File("logback.xml");
@@ -112,7 +112,7 @@ public class SimulatorServiceTest {
      * @param tableinfoPath 数据表描述文件的绝对路径
      * @return      生成的SQL Script
      * @throws Exception
-     * @since		JDK 1.8.0_144
+     * @since		JDK 1.8.0
      */
     public String testSimulate(String tableinfoPath) throws Exception {
         SimulatorService service = new SimulatorService(tableinfoPath);
@@ -127,7 +127,7 @@ public class SimulatorServiceTest {
      * @param tableinfoPath 数据表描述文件的绝对路径
      * @return      生成的SQL Script
      * @throws Exception
-     * @since		JDK 1.8.0_144
+     * @since		JDK 1.8.0
      */
     public String testSimulate(String tableinfoPath, int rows) throws Exception {
         SimulatorService service = new SimulatorService(tableinfoPath);
@@ -141,7 +141,7 @@ public class SimulatorServiceTest {
      * @param resourceName  表示所需释放资源文件的文件名
      * @param decompressDir 表示将资源文件释放后存放的位置，结尾须是“/”
      * @throws IOException
-     * @since		JDK 1.8.0_144
+     * @since		JDK 1.8.0
      */
     private void decompressResourceFromJar(String resourceName, String decompressDir) throws IOException {
         // If the file does not exist yet, it will be created. If the file exists already, it will be ignored
@@ -181,7 +181,7 @@ public class SimulatorServiceTest {
      * @param sql
      * @return      所生成SQL Script文件[.sql]的绝对路径
      * @throws IOException
-     * @since		JDK 1.8.0_144
+     * @since		JDK 1.8.0
      */
     private String writeFile(String sql) throws IOException {
         String tablename = "default";
