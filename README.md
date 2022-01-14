@@ -9,6 +9,8 @@
 
 # DataSimulator
 
+[![SoyaDokio's GitHub stats](https://github-readme-stats.vercel.app/api?username=sdokio&bg_color=30,e96443,904e95&title_color=fff&icon_color=fff&text_color=fff&show_icons=true)](https://github.com/anuraghazra/github-readme-stats)
+
 ## :point_right: 介绍
 按 *数据表描述文件* 生成可插入/导入数据库的模拟数据记录，主要用作数据测试。
 
